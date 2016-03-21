@@ -1,4 +1,6 @@
 body { 
+    font-family : "Courier New", courier;
+    color : #222222;
     background-image: url('/static/images/background.jpg');
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -8,29 +10,36 @@ body {
 }
 
 #content {
-    position:fixed;
-    top: 50%;
-    left: 60%;
-    width:30em;
-    height:18em;
-    margin-top: -9em; /*set to a negative number 1/2 of your height*/
-    margin-left: -15em; /*set to a negative number 1/2 of your width*/
-    border: 1px solid #ccc;
-    background-color: #f3f3f3;
+    position : fixed;
+    bottom : 30%;
+    left : 60%;
+    width : 20em;
+    padding : 0.2em;
+    /*height:14em;
+    margin-top: -7em; */
+    margin-left : -10em; /*set to a negative number 1/2 of your width*/
+    border : 1px solid #444;
+    background-color : rgba(100, 100, 100, 0.5);
 }
 
 #message {
-    text-align: center;
+    padding : 0.25em;
+    font-size : x-large;
+    text-align : center;
 }
 
 #buttons {
-    position: absolute;
-    bottom : 0;
     width : 100%;
+}
+
+#img {
+    margin-bottom : 0.5em;
 }
 
 /*    width : 20%;*/
 button {
+    margin-bottom : 0.5em;
+    font-size : large;
     margin-left : auto;
     margin-right : auto;
 }
