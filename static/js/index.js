@@ -1,18 +1,18 @@
 var Index = Index || {}
 
 var samples = [
-    { path : '/static/images/images/created/GTD444_1245_0pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
-    { path : '/static/images/images/created/ReneN5_1238_1079_5pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
-    { path : '/static/images/images/created/ReneN5_1251_1079_2pct_10000x_Transverse_Interdendritic.TIF.png', real : false},
-    { path : '/static/images/images/created/ReneN5_1264_1079_0pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
-    { path : '/static/images/images/created/ReneN5_1278_1079_2pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
-    { path : '/static/images/images/created/ReneN5_1293_2pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
-    { path : '/static/images/images/created/ReneN5_1293_5pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
-    { path : '/static/images/images/reference/GTD444_1229_0pct_10000x_Transverse_Interdendritic.TIF.png', real : true },
-    { path : '/static/images/images/reference/ReneN5_1238_1079_5pct_10000x_Transverse_Interdendritic.TIF.png', real : true },
-    { path : '/static/images/images/reference/ReneN5_1251_1079_0pct_10000x_Transverse_DendriteCore.TIF.png', real : true },
-    { path : '/static/images/images/reference/ReneN5_1251_1079_0pct_10000x_Transverse_Interdendritic.TIF.png', real : true },
-    { path : '/static/images/images/reference/ReneN5_1278_0pct_10000x_Transverse_DendriteCore.TIF.png', real : true }
+    { path : '/static/images/created/GTD444_1245_0pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
+    { path : '/static/images/created/ReneN5_1238_1079_5pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
+    { path : '/static/images/created/ReneN5_1251_1079_2pct_10000x_Transverse_Interdendritic.TIF.png', real : false},
+    { path : '/static/images/created/ReneN5_1264_1079_0pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
+    { path : '/static/images/created/ReneN5_1278_1079_2pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
+    { path : '/static/images/created/ReneN5_1293_2pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
+    { path : '/static/images/created/ReneN5_1293_5pct_10000x_Transverse_DendriteCore.TIF.png', real : false},
+    { path : '/static/images/reference/GTD444_1229_0pct_10000x_Transverse_Interdendritic.TIF.png', real : true },
+    { path : '/static/images/reference/ReneN5_1238_1079_5pct_10000x_Transverse_Interdendritic.TIF.png', real : true },
+    { path : '/static/images/reference/ReneN5_1251_1079_0pct_10000x_Transverse_DendriteCore.TIF.png', real : true },
+    { path : '/static/images/reference/ReneN5_1251_1079_0pct_10000x_Transverse_Interdendritic.TIF.png', real : true },
+    { path : '/static/images/reference/ReneN5_1278_0pct_10000x_Transverse_DendriteCore.TIF.png', real : true }
 ];
 
 samples = _.shuffle(samples);
@@ -27,6 +27,13 @@ var grade = function()
     }
 
     variables.total = variables.answers.length;
+
+    $.ajax( {
+        url : '/accept_score',
+        data : { variables : JSON.stringify(variables), samples : JSON.stringify(samples) },
+        dataType : 'json',
+        method : 'POST'
+    } );
 }
 
 var verifyName = function()
@@ -79,7 +86,7 @@ var randomNegative = function()
 var variables = { answers : [] };
 
 var flow = {
-    '0' : ['Hello, what is your name?', [
+    '0' : ['Hello, I\'m Frog. What is your name?', [
 	{
 	    target : '#input1',
 	},
@@ -91,13 +98,11 @@ var flow = {
     '0.1' : ['No it\'s not, what is your name?', [
 	{
 	    target : '#input1',
-	    text : ''
 	},
 	{
 	    target : '#opt1',
 	    text : '>>',
-	    event : verifyName,
-	    nextState : 1
+	    nextState : verifyName
 	}]],
     '1' : ['Oh yes, <%= name %>, I remember you now.', [
         {
@@ -106,7 +111,7 @@ var flow = {
             nextState : 2
         }]],
 
-    '2' : ['Sometimes my memory gets <b>froggy</b>... It\'s that time of year you know.', [
+    '2' : ['Sometimes my memory gets <b>froggy</b>.', [
         {
             target : '#opt1',
             text : '...',
@@ -272,7 +277,12 @@ var flow = {
             nextState : function() { grade(); return '19'; }
         }]],
 
-    '19' : ['<%= correct %> / <%= total %>'],
+    '19' : ['<%= correct %> / <%= total %>', [
+        {
+            target : '#opt1',
+            text : '>>',
+            nextState : function() { window.location = '/scores'; }
+        }]],
 };
 
 Index.Controller = Backbone.View.extend(
@@ -341,18 +351,6 @@ Index.Controller = Backbone.View.extend(
 	    this.$el.find( '#innerContent' ).fadeIn(400);
 	},
 
-        ajax : function(choice, line, gameId)
-        {
-            $.ajax( {
-                url : '/',
-                data : {  },
-                dataType : 'json',
-                method : 'POST',
-                success : _.bind(this.succeeded, this),
-                error : _.bind(this.failed, this)
-            } );
-        },
-
         render : function()
         {
             this.$el = $("body");
@@ -360,7 +358,11 @@ Index.Controller = Backbone.View.extend(
 
             //this.data = $.parseJSON(this.$el.find( '.data' ).text());
 
-	    this.transition('0');
+            this.$el.find( '#innerContent' ).show();
+
+            this.state = '0';
+
+	    this.finishTransition();
             this.delegateEvents();
         },
     }

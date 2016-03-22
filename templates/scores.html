@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="static/css/scores.css">
+  </head>
+  <body>
+    <div>
+      <table id="results">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for quiz in quizes %}
+          <tr>
+            <td>{{ quiz.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ quiz.name }}</td>
+            <td>{{ quiz.correct }} / {{ quiz.total }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+    </div>
+  </body>
+</html>

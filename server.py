@@ -15,13 +15,12 @@ import flask
 import flask.ext.login
 import flask.ext.session
 
-login_manager = flask.ext.login.LoginManager()
-session = flask.ext.session.Session()
-
 appDir = os.path.abspath(os.path.dirname(__file__))
 
 templateLoader = jinja2.FileSystemLoader(searchpath = "templates")
 templateEnv = jinja2.Environment(loader = templateLoader)
+
+session = flask.ext.session.Session()
 
 engine = database.getEngine(os.path.join(appDir, 'db.sql'))
 
@@ -36,15 +35,7 @@ def logexceptions(func):
 
     return inner
 
-app = flask.Flask('digibookie')
-app.config.from_object({ 'DEBUG' : True,
-                         'SECRET_KEY' : 'something' })
-
-login_manager.login_view = '/login'
-
-@login_manager.user_loader
-def load_user(user_id):
-    return flask.g.session.query(database.User).get(user_id)
+app = flask.Flask('microstructure_quiz')
 
 @app.before_request
 def before_request():
@@ -57,133 +48,59 @@ def teardown_request(exception):
         session.commit()
         session.close()
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    username = flask.request.form.get('username', None)
-    password = flask.request.form.get('password', None)
+@app.route('/accept_score', methods=['POST'])
+def accept_score():
+    data = flask.request.form.get('variables', None)
+    samples = flask.request.form.get('samples', None)
 
-    if username:
-        user = flask.g.session.query(database.User).filter(database.User.name == username).first()
-        
-        if user:
-            if user.password != password:
-                return flask.render_template('login.html', msg = msg)            
+    print data
 
-            flask.ext.login.login_user(user)
+    data = json.loads(data)
+    samples = json.loads(samples)
 
-            flask.flash('Logged in successfully.')
-            
-            return flask.redirect('/')
+    print data
 
-    return flask.render_template('login.html')
-
-@app.route('/create_user', methods=['GET', 'POST'])
-def create_user():
-    username = flask.request.form.get('username', None)
-    password = flask.request.form.get('password', None)
-
-    if username:
-        user = flask.g.session.query(database.User).filter(database.User.name == username).first()
-
-        if not user:
-            user = database.User(name = username, password = password)
-            flask.g.session.add(user)
-            flask.g.session.commit()
-
-        flask.ext.login.login_user(user)
-
-        flask.flash('User created and logged in successfully.')
-
-        return flask.redirect('/')
-
-    return flask.render_template('create_user.html')
-
-@app.route('/logout', methods=['GET', 'POST'])
-@flask.ext.login.login_required
-def logout():
-    flask.ext.login.logout_user()
-    return flask.redirect('/login')
-
-@app.route('/make_bet', methods=['POST'])
-@flask.ext.login.login_required
-def takeBet():
-    gameId = int(flask.request.form.get('gameId', None))
-    line = float(flask.request.form.get('line', None))
-    choice = flask.request.form.get('choice', None)
-
-    if choice not in ['home', 'away']:
-        return flask.json.jsonify({ 'status' : False, 'msg' : "Error parsing request" })
-
-    game = flask.g.session.query(database.Game).get(gameId)
-
-    if not game or line not in game.lines or datetime.datetime.utcnow() > game.date:
-        return flask.json.jsonify({ 'status' : False, 'msg' : 'Game/Line combo not available for betting' })
-
-    bet = flask.g.session.query(database.Bet).filter(sqlalchemy.and_(
-        database.Bet.userId == flask.ext.login.current_user.get_id(),
-        database.Bet.gameId == gameId)
-    ).first()
-
-    if bet is not None:
-        return flask.json.jsonify({ 'status' : False, 'msg' : 'You only get one bet per game' })
-
-    flask.g.session.add(database.Bet(userId = flask.ext.login.current_user.get_id(), gameId = gameId, line = line, result = -1, date = game.date, choice = choice))
-
-    return flask.json.jsonify({ 'status' : True, 'msg' : 'Bet accepted' })
-
-@app.route('/log')
-@flask.ext.login.login_required
-def betLog():
     date = datetime.datetime.utcnow()
     date = datetime.datetime(year = date.year, month = date.month, day = date.day)
 
-    bets = flask.g.session.query(database.Bet).filter(sqlalchemy.and_(
-        userId == flask.ext.login.current_user.get_id(),
-        database.Bet.date > date)
-    ).all()
+    print date
 
-    return flask.render_template('index.html', bets, games = [])
+    flask.g.session.add(database.Quiz(date = date, name = data['name'], answers = json.dumps(data['answers']), correct = data['correct'], total = data['total'], samples = json.dumps(samples)))
+
+    return flask.json.jsonify({ 'status' : True, 'msg' : 'Score accepted' })
+
+@app.route('/scores')
+def scores():
+    quizes = flask.g.session.query(database.Quiz)
+
+    return flask.render_template('scores.html', quizes = quizes)
 
 @app.route('/')
-@flask.ext.login.login_required
 def index():
-    date = datetime.datetime.utcnow()
-    date = datetime.datetime(year = date.year, month = date.month, day = date.day)
+    pw = flask.request.args.get('pw', None)
 
-    bets = []
+    print pw
 
-    for bet in flask.g.session.query(database.Bet).filter(sqlalchemy.and_(
-        database.Bet.userId == flask.ext.login.current_user.get_id(),
-        database.Bet.date > date)
-    ).order_by(sqlalchemy.desc(database.Bet.date)):
-        bets.append({ "line" : bet.line,
-                      "title" : "{0} at {1}".format(bet.game.away, bet.game.home),
-                      "gameId" : bet.gameId,
-                      "choice" : bet.choice })
+    if pw != '':
+        return ''
 
-    games = []
+    return flask.render_template('start.html')
 
-    for game in flask.g.session.query(database.Game).filter(database.Game.date > date).order_by(sqlalchemy.desc(database.Game.date)):
-        games.append({ "home" : game.home,
-                       "away" : game.away,
-                       "line" : game.lines[-1],
-                       "id" : game.id,
-                       "date" : date.strftime("%a, %b %d, %H:%M GMT") })
+@app.route('/quiz')
+def quiz():
+    pw = flask.request.args.get('pw', None)
 
-    print bets, games
+    print pw
 
-    return flask.render_template('index.html', username = flask.ext.login.current_user.name, data = json.dumps({ 'bets' : bets, 'games' : games }))
+    if pw != '':
+        return ''
 
-#@app.route('/secret-page')
-#@requires_auth
-#def secret_page():
-#    return "yabadabbado!"
+    return flask.render_template('index.html')
 
 if __name__ == '__main__':
     app.secret_key = 'alsdkjfasd'
     app.config['SESSION_TYPE'] = 'filesystem'
 
-    login_manager.init_app(app)
     session.init_app(app)
 
-    app.run(debug = True)
+    app.run(host = 'frog.cs.ucsb.edu', debug = False)
