@@ -80,7 +80,7 @@ def index():
 
     print pw
 
-    if pw != '':
+    if pw != 'microstructures':
         return ''
 
     return flask.render_template('start.html')
@@ -91,7 +91,7 @@ def quiz():
 
     print pw
 
-    if pw != '':
+    if pw != 'microstructures':
         return ''
 
     return flask.render_template('index.html')
