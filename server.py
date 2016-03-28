@@ -1,4 +1,3 @@
-import gensim
 import jinja2
 import json
 import numpy
@@ -103,4 +102,4 @@ if __name__ == '__main__':
 
     session.init_app(app)
 
-    app.run(host = 'frog.cs.ucsb.edu', debug = False)
+    app.run(host = '128.111.46.167', debug = False)
