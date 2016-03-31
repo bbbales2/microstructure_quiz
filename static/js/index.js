@@ -130,7 +130,7 @@ var flow = {
             nextState : function() { variables['plays'] = true; return '5'}
         }]],
 
-    '4' : ['You want to play a game?! Why did you come to Frog Hall?', [
+    '4' : ['You want to play a game?! Why did you come here?', [
         {
             target : '#opt1',
             text : 'I wa...',
@@ -144,7 +144,7 @@ var flow = {
             nextState : 6
         }]],
 
-    '6' : ['We\'re very serious here', [
+    '6' : ['We\'re very serious', [
         {
             target : '#opt1',
             text : '>>',
