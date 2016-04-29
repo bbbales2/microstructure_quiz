@@ -112,4 +112,4 @@ if __name__ == '__main__':
 
     session.init_app(app)
 
-    app.run(host = 'frog.cs.ucsb.edu', debug = True)
+    app.run(host = 'basilisk.cs.ucsb.edu', debug = False)

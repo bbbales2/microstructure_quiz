@@ -21,3 +21,8 @@ body {
     border : 1px solid #444;
     background-color : rgba(100, 100, 100, 0.5);
 }
+
+#results table {
+    text-align : center;
+    width : 100%;
+}
