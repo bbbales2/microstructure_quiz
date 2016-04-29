@@ -1,4 +1,3 @@
-import gensim
 import jinja2
 import json
 import numpy
@@ -69,6 +68,20 @@ def accept_score():
 
     return flask.json.jsonify({ 'status' : True, 'msg' : 'Score accepted' })
 
+@app.route('/detail')
+def detail():
+    Id = flask.request.args.get('id', None)
+
+    quiz = flask.g.session.query(database.Quiz).get(int(Id))
+
+    if not quiz:
+        return ''
+
+    answers = json.loads(quiz.answers)
+    samples = json.loads(quiz.samples)[:10]
+
+    return flask.render_template('detail.html', results = zip(answers, samples))
+
 @app.route('/scores')
 def scores():
     quizes = flask.g.session.query(database.Quiz)
@@ -79,8 +92,6 @@ def scores():
 def index():
     pw = flask.request.args.get('pw', None)
 
-    print pw
-
     if pw != 'microstructures':
         return ''
 
@@ -89,8 +100,6 @@ def index():
 @app.route('/quiz')
 def quiz():
     pw = flask.request.args.get('pw', None)
-
-    print pw
 
     if pw != 'microstructures':
         return ''
@@ -103,4 +112,4 @@ if __name__ == '__main__':
 
     session.init_app(app)
 
-    app.run(host = 'frog.cs.ucsb.edu', debug = False)
+    app.run(host = 'frog.cs.ucsb.edu', debug = True)

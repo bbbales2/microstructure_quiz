@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="static/css/detail.css">
+  </head>
+  <body>
+    <center>
+      <div id="results">
+        <table>
+          <thead>
+            <tr>
+              <th>Is Real (your answer)</th>
+              <th>Is Real (truth)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for answer, sample in results %}
+            <tr>
+              <td colspan="2">
+                <table id="inner">
+                  <tr>
+                    
+                    <th {% if answer == sample.real %} class="green" {% else %} class="red" {% endif %} >{{ answer }}</th>
+                    <th>{{ sample.real }}</th>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><img src="{{ sample.path }}"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </center>
+  </body>
+</html>

@@ -16,7 +16,7 @@
           {% for quiz in quizes %}
           <tr>
             <td>{{ quiz.date.strftime('%Y-%m-%d') }}</td>
-            <td>{{ quiz.name }}</td>
+            <td><a href="detail?id={{ quiz.id }}">{{ quiz.name }}</a></td>
             <td>{{ quiz.correct }} / {{ quiz.total }}</td>
           </tr>
           {% endfor %}
